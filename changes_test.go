@@ -54,10 +54,13 @@ func connect(t *testing.T, ctx context.Context, connString string) *pgx.Conn {
 	return conn
 }
 
-// setupRaceScenario reproduit l'ordre du pipeline de l'article : T1 insère et
-// reste ouverte, T2 insère et committe immédiatement, le client lit et avance
-// son curseur, puis T1 committe enfin. renvoie la transaction T1 encore
-// ouverte : à l'appelant de la committer pour terminer le scénario.
+// setupRaceScenario reproduit l'ordre du pipeline de l'article : 
+// 
+// - T1 insère et reste ouverte, 
+// - T2 insère et committe immédiatement, 
+//
+// Le client lit et avance son curseur, puis T1 committe enfin. 
+// Il renvoie la transaction T1 encore ouverte : à l'appelant de la committer pour terminer le scénario.
 func setupRaceScenario(t *testing.T, ctx context.Context, admin *pgx.Conn, t1Conn, t2Conn *pgx.Conn) pgx.Tx {
 	t.Helper()
 

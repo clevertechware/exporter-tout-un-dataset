@@ -1,6 +1,3 @@
-// Package syncdemo reproduit le trou de visibilité décrit dans l'article :
-// un curseur naïf sur une colonne séquentielle peut perdre définitivement une
-// ligne dont la transaction committe après qu'un client de synchro est passé.
 package syncdemo
 
 import (
@@ -30,8 +27,7 @@ func createSchema(ctx context.Context, conn *pgx.Conn) error {
 	return nil
 }
 
-// insertRow ouvre une transaction, insère une ligne et laisse l'appelant
-// décider du moment du commit (ou du rollback).
+// insertRow ouvre une transaction, insère une ligne et laisse l'appelant décider du moment du commit (ou du rollback).
 func insertRow(ctx context.Context, conn *pgx.Conn, payload string) (pgx.Tx, error) {
 	tx, err := conn.Begin(ctx)
 	if err != nil {
@@ -44,9 +40,9 @@ func insertRow(ctx context.Context, conn *pgx.Conn, payload string) (pgx.Tx, err
 	return tx, nil
 }
 
-// readSinceNaiveCursor est le curseur naïf de l'article : trié sur la clé
-// séquentielle. C'est celui qui perd la ligne
-// d'une transaction encore ouverte au moment de la lecture.
+// readSinceNaiveCursor est le curseur naïf de l'article : trié sur la clé séquentielle.
+// 
+// C'est celui qui perd la ligne d'une transaction encore ouverte au moment de la lecture.
 func readSinceNaiveCursor(ctx context.Context, conn *pgx.Conn, lastPosition int64, limit int) ([]Row, error) {
 	rows, err := conn.Query(ctx, `
 		SELECT position, payload

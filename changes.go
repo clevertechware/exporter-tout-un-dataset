@@ -9,7 +9,7 @@ import (
 
 const schema = `
 CREATE TABLE changes (
-    position BIGSERIAL PRIMARY KEY,
+    position BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     payload  TEXT NOT NULL
 );
 `
@@ -33,7 +33,7 @@ func insertRow(ctx context.Context, conn *pgx.Conn, payload string) (pgx.Tx, err
 	if err != nil {
 		return nil, fmt.Errorf("begin transaction: %w", err)
 	}
-	if _, err := tx.Exec(ctx, "INSERT INTO changes (payload) VALUES ($1)", payload); err != nil {
+	if _, err = tx.Exec(ctx, "INSERT INTO changes (payload) VALUES ($1)", payload); err != nil {
 		_ = tx.Rollback(ctx)
 		return nil, fmt.Errorf("insert row: %w", err)
 	}
@@ -41,7 +41,7 @@ func insertRow(ctx context.Context, conn *pgx.Conn, payload string) (pgx.Tx, err
 }
 
 // readSinceNaiveCursor est le curseur naïf de l'article : trié sur la clé séquentielle.
-// 
+//
 // C'est celui qui perd la ligne d'une transaction encore ouverte au moment de la lecture.
 func readSinceNaiveCursor(ctx context.Context, conn *pgx.Conn, lastPosition int64, limit int) ([]Row, error) {
 	rows, err := conn.Query(ctx, `

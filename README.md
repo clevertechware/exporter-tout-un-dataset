@@ -10,6 +10,21 @@ synchro lit et avance son curseur, puis T1 committe enfin.
 `position > $1` (l'équivalent séquence de `updated_at`) : la ligne de T1 n'est
 plus jamais renvoyée, elle est perdue pour toujours.
 
+## La parade : reculer le watermark
+
+`GET /changes?updated_since=<RFC 3339>` (`api.go`) renvoie les lignes dont `updated_at` dépasse la date donnée, sans
+paramètre tout le dataset. `SyncClient` (`syncclient.go`) retient le plus grand `updated_at` vu et le recule d'une marge
+avant chaque appel, puis absorbe les lignes revues par leur `position`.
+
+## Lancer l'API
+
+```bash
+go run ./cmd/server
+```
+
+L'application démarre un conteneur Postgres, y charge 10 lignes (une par minute) puis sert `GET /changes` sur un port
+libre. Elle affiche les commandes `curl` à copier pour l'interroger, et supprime le conteneur à l'arrêt (Ctrl+C).
+
 ## Prérequis
 
 - Go 1.27+

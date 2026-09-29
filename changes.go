@@ -10,7 +10,8 @@ import (
 const schema = `
 CREATE TABLE changes (
     position BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    payload  TEXT NOT NULL
+    payload    TEXT NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 `
 
@@ -20,9 +21,22 @@ type Row struct {
 	Payload  string
 }
 
-func createSchema(ctx context.Context, conn *pgx.Conn) error {
+func CreateSchema(ctx context.Context, conn *pgx.Conn) error {
 	if _, err := conn.Exec(ctx, schema); err != nil {
 		return fmt.Errorf("create schema: %w", err)
+	}
+	return nil
+}
+
+// SeedChanges insère count lignes espacées d'une minute, la plus récente datant d'il y a une minute.
+func SeedChanges(ctx context.Context, conn *pgx.Conn, count int) error {
+	_, err := conn.Exec(ctx, `
+		INSERT INTO changes (payload, updated_at)
+		SELECT 'record-' || i, now() - (($1::int - i + 1) * interval '1 minute')
+		FROM generate_series(1, $1::int) AS i
+	`, count)
+	if err != nil {
+		return fmt.Errorf("seed changes: %w", err)
 	}
 	return nil
 }

@@ -65,7 +65,7 @@ func connect(t *testing.T, ctx context.Context, connString string) *pgx.Conn {
 func setupRaceScenario(t *testing.T, ctx context.Context, admin *pgx.Conn, t1Conn, t2Conn *pgx.Conn) pgx.Tx {
 	t.Helper()
 
-	if err := createSchema(ctx, admin); err != nil {
+	if err := CreateSchema(ctx, admin); err != nil {
 		t.Fatalf("create schema: %v", err)
 	}
 
